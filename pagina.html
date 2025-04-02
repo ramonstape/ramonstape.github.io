@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Licores Avellaneda</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: #000;
+        }
+        nav {
+            background-color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 22px;
+            margin-right: 10px;
+        }
+        .nav-links a:hover {
+            color: #ffa500;
+        }
+        #search-bar-container {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #search-bar {
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 90%;
+            max-width: 400px;
+            margin-right: 10px;
+        }
+        #search-button {
+            padding: 5px 10px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #search-button:hover {
+            background-color: #218838;
+        }
+        section {
+            display: none;
+            padding: 20px;
+            text-align: center;
+        }
+        section.active {
+            display: block;
+        }
+        
+        
+        .product-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: stretch; 
+        }
+
+        
+        .product {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center; 
+    border: none;
+    padding: 10px;
+    width: calc(50% - 20px); 
+    margin-bottom: 20px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+        .product h2 {
+            font-size: 17px; 
+            margin: 15px 5px;
+        }
+
+        img {
+            max-width: 130px;
+            height: auto;
+        }
+
+        
+        .quantity-controls {
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+            margin-top: auto; 
+        }
+        
+        button {
+            border: none;
+            padding: 5px 10px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .minus {
+            background-color: #000000;
+            color: white;
+            padding: 7px 15px;
+            font-size: 30px;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+
+        .plus {
+            background-color: #000000;
+            color: white;
+            padding: 7px 15px;
+            font-size: 30px;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+
+        .quantity {
+            font-size: 30px;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+
+        #cart {
+            margin-top: 20px;
+            border-top: 2px solid #ccc;
+            padding-top: 10px;
+        }
+        #cart h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        #cart-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #cart-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .cart-controls button {
+            padding: 5px 10px;
+            font-size: 20px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .cart-minus {
+            background-color: #000000;
+            color: white;
+        }
+        .cart-plus {
+            background-color: #000000;
+            color: white;
+        }
+        .cart-delete {
+            background-color: #6c757d;
+            color: white;
+        }
+        ul {
+            list-style-type: none; 
+            padding: 0;
+            margin: 0;
+            font-size: 20px; 
+        }
+        ul li {
+            border: 1px solid #333; 
+            padding: 10px; 
+            margin: 5px 0; 
+            text-align: center; 
+            background-color: #f9f9f9; 
+            cursor: pointer; 
+            border-radius: 5px; 
+        }
+        ul li:hover {
+            background-color: #ffa500; 
+            color: white; 
+        }
+
+        #send-whatsapp-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        #send-whatsapp-button:hover {
+            background-color: #218838;
+        }
+    </style>
+    <script>
+        const cart = {};
+
+        function addToCart(productName, price) {
+            if (!cart[productName]) {
+                cart[productName] = { quantity: 1, price };
+            } else {
+                cart[productName].quantity++;
+            }
+            updateCart();
+            updateProductQuantity(productName);
+        }
+
+        function removeFromCart(productName) {
+            if (cart[productName]) {
+                cart[productName].quantity--;
+                if (cart[productName].quantity <= 0) {
+                    delete cart[productName];
+                }
+                updateCart();
+                updateProductQuantity(productName);
+            }
+        }
+
+        function deleteFromCart(productName) {
+            delete cart[productName];
+            updateCart();
+            updateProductQuantity(productName);
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+
+            let total = 0;
+            for (const productName in cart) {
+                const item = cart[productName];
+                total += item.quantity * item.price;
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <span>${item.quantity} x ${productName} - ₡${item.price * item.quantity}</span>
+                    <div class="cart-controls">
+                        <button class="cart-minus" onclick="removeFromCart('${productName}')">-</button>
+                        <button class="cart-plus" onclick="addToCart('${productName}', ${item.price})">+</button>
+                        <button class="cart-delete" onclick="deleteFromCart('${productName}')">Eliminar</button>
+                    </div>
+                `;
+                cartItems.appendChild(listItem);
+            }
+
+            document.getElementById('cart-total').textContent = `Total: ₡${total}`;
+        }
+
+        function updateProductQuantity(productName) {
+            const productElements = document.querySelectorAll('.product');
+            productElements.forEach(product => {
+                const title = product.querySelector('h2').textContent;
+                const quantityElement = product.querySelector('.quantity');
+                if (title === productName && quantityElement) {
+                    quantityElement.textContent = cart[productName]?.quantity || 0;
+                }
+            });
+        }
+
+        function sendToWhatsApp() {
+            let message = 'Carrito de Compras:\n';
+            let total = 0;
+            for (const productName in cart) {
+                const item = cart[productName];
+                total += item.quantity * item.price;
+                message += `${item.quantity} x ${productName} - ₡${item.price * item.quantity}\n`;
+            }
+            message += `\nTotal: ₡${total}`;
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function showSection(event, sectionId) {
+            event.preventDefault();
+            const sections = document.querySelectorAll('section');
+            sections.forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function searchProduct(event) {
+    event.preventDefault();
+    const query = document.getElementById('search-bar').value.toLowerCase();
+    const sections = document.querySelectorAll('section');
+    let found = false;
+
+    sections.forEach(section => {
+        const textContent = section.textContent.toLowerCase();
+        if (textContent.includes(query)) {
+            sections.forEach(sec => sec.classList.remove('active')); 
+            section.classList.add('active'); 
+            found = true;
+
+           
+            const products = section.querySelectorAll('.product');
+            products.forEach(product => {
+                const productName = product.querySelector('h2').textContent.toLowerCase();
+                if (productName.includes(query)) {
+                    product.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                }
+            });
+        }
+    });
+
+    if (!found) {
+        alert('Producto o contenido no encontrado');
+    }
+}
+
+    </script>
+</head>
+<body>
+    <nav>
+        <div class="nav-links">
+            <a href="#" onclick="showSection(event, 'inicio')">Inicio</a>
+            <a href="#" onclick="showSection(event, 'catalogo')">Catálogo</a>
+            <a href="#" onclick="showSection(event, 'promociones')">Promociones</a>
+        </div>
+        <div id="search-bar-container">
+            <input type="text" id="search-bar" placeholder="Buscar productos...">
+            <button id="search-button" onclick="searchProduct(event)">Buscar</button>
+        </div>
+    </nav>
+
+    <section id="inicio" class="active">
+    <h1>Bienvenido a Licores Avellaneda</h1>
+    <p><strong>Todos los pedidos realizados después de las 11:00 AM serán entregados al día siguiente.</strong></p>
+    <p>¡Gracias por su comprensión!</p>
+    <p><strong>Las entregas se realizan de lunes a sábado.</strong></p>
+</section>
+
+
+    <section id="catalogo">
+        <ul>
+            <li onclick="showSection(event, 'ginebras')">Ginebras</li>
+            <li onclick="showSection(event, 'licores_digestivos')">Licores y Digestivos</li>
+            <li onclick="showSection(event, 'vinos')">Vinos</li>
+            <li onclick="showSection(event, 'cervezas')">Cervezas</li>
+            <li onclick="showSection(event, 'whisky')">Whisky</li>
+            <li onclick="showSection(event, 'vodka')">Vodka</li>
+            <li onclick="showSection(event, 'ron')">Ron</li>
+            <li onclick="showSection(event, 'tequila_mezcal')">Tequila y Mezcal</li>
+            <li onclick="showSection(event, 'champagne_espumantes')">Champagne y Espumantes</li>
+        </ul>
+    </section>
+
+    <section id="ginebras">
+        <h1>Ginebras</h1>
+        <div class="product-container">
+
+            <div class="product">
+                <h2>Gin Mare</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Gin Mare">
+                <p>₡35,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Gin Mare')">-</button>
+                    <span class="quantity" id="counter-Gin Mare">0</span>
+                    <button class="plus" onclick="addToCart('Gin Mare', 35000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>The Botanist Islay</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="The Botanist Islay">
+                <p>₡20,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('The Botanist Islay')">-</button>
+                    <span class="quantity" id="counter-The Botanist Islay">0</span>
+                    <button class="plus" onclick="addToCart('The Botanist Islay', 20000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Tanqueray Ten</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Tanqueray Ten">
+                <p>₡19,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Tanqueray Ten')">-</button>
+                    <span class="quantity" id="counter-Tanqueray Ten">0</span>
+                    <button class="plus" onclick="addToCart('Tanqueray Ten', 19000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Tanqueray Malacca</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Tanqueray Malacca">
+                <p>₡16,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Tanqueray Malacca')">-</button>
+                    <span class="quantity" id="counter-Tanqueray Malacca">0</span>
+                    <button class="plus" onclick="addToCart('Tanqueray Malacca', 16000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Tanqueray Sevilla</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Tanqueray Sevilla">
+                <p>₡16,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Tanqueray Sevilla')">-</button>
+                    <span class="quantity" id="counter-Tanqueray Sevilla">0</span>
+                    <button class="plus" onclick="addToCart('Tanqueray Sevilla', 16000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Tanqueray Litro</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Tanqueray Litro">
+                <p>₡13,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Tanqueray Litro')">-</button>
+                    <span class="quantity" id="counter-Tanqueray Litro">0</span>
+                    <button class="plus" onclick="addToCart('Tanqueray Litro', 13000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>London #1</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="London #1">
+                <p>₡19,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('London #1')">-</button>
+                    <span class="quantity" id="counter-London #1">0</span>
+                    <button class="plus" onclick="addToCart('London #1', 19000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Hendricks Gin Litro</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Hendricks Gin Litro">
+                <p>₡18,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Hendricks Gin Litro')">-</button>
+                    <span class="quantity" id="counter-Hendricks Gin Litro">0</span>
+                    <button class="plus" onclick="addToCart('Hendricks Gin Litro', 18000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Bombay Litro</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Bombay Litro">
+                <p>₡11,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Bombay Litro')">-</button>
+                    <span class="quantity" id="counter-Bombay Litro">0</span>
+                    <button class="plus" onclick="addToCart('Bombay Litro', 11000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Bombay Bramble Botella</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Bombay Bramble Botella">
+                <p>₡10,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Bombay Bramble Botella')">-</button>
+                    <span class="quantity" id="counter-Bombay Bramble Botella">0</span>
+                    <button class="plus" onclick="addToCart('Bombay Bramble Botella', 10000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Beefeater Pink Litro</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Beefeater Pink Litro">
+                <p>₡13,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Beefeater Pink Litro')">-</button>
+                    <span class="quantity" id="counter-Beefeater Pink Litro">0</span>
+                    <button class="plus" onclick="addToCart('Beefeater Pink Litro', 13000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Beefeater Blood Orange</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Beefeater Blood Orange">
+                <p>₡13,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Beefeater Blood Orange')">-</button>
+                    <span class="quantity" id="counter-Beefeater Blood Orange">0</span>
+                    <button class="plus" onclick="addToCart('Beefeater Blood Orange', 13000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Beefeater Litro</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Beefeater Litro">
+                <p>₡11,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Beefeater Litro')">-</button>
+                    <span class="quantity" id="counter-Beefeater Litro">0</span>
+                    <button class="plus" onclick="addToCart('Beefeater Litro', 11000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Bosford Rose Botella</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Bosford Rose Botella">
+                <p>₡13,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Bosford Rose Botella')">-</button>
+                    <span class="quantity" id="counter-Bosford Rose Botella">0</span>
+                    <button class="plus" onclick="addToCart('Bosford Rose Botella', 13000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Bulldog</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Bulldog">
+                <p>₡13,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Bulldog')">-</button>
+                    <span class="quantity" id="counter-Bulldog">0</span>
+                    <button class="plus" onclick="addToCart('Bulldog', 13000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Puerto de Indias</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Puerto de Indias">
+                <p>₡12,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Puerto de Indias')">-</button>
+                    <span class="quantity" id="counter-Puerto de Indias">0</span>
+                    <button class="plus" onclick="addToCart('Puerto de Indias', 12000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Gordons Litro</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Gordons Litro">
+                <p>₡10,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Gordons Litro')">-</button>
+                    <span class="quantity" id="counter-Gordons Litro">0</span>
+                    <button class="plus" onclick="addToCart('Gordons Litro', 10000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Conciere</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Conciere">
+                <p>₡5,500</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Conciere')">-</button>
+                    <span class="quantity" id="counter-Conciere">0</span>
+                    <button class="plus" onclick="addToCart('Conciere', 5500)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Ninnoff Gin</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Ninnoff Gin">
+                <p>₡5,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Ninnoff Gin')">-</button>
+                    <span class="quantity" id="counter-Ninnoff Gin">0</span>
+                    <button class="plus" onclick="addToCart('Ninnoff Gin', 5000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Ninnoff Pink</h2>
+                <img src="URL_DE_LA_IMAGEN" alt="Ninnoff Pink">
+                <p>₡5,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Ninnoff Pink')">-</button>
+                    <span class="quantity" id="counter-Ninnoff Pink">0</span>
+                    <button class="plus" onclick="addToCart('Ninnoff Pink', 5000)">+</button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="licores_digestivos">
+        <h1>Licores y Digestivos</h1>
+        <div class="product-container">
+            <!-- Productos de Licores y Digestivos -->
+        </div>
+    </section>
+
+    <section id="vinos">
+        <h1>Vinos</h1>
+        <div class="product-container">
+            <!-- Productos de Vinos -->
+        </div>
+    </section>
+
+    <section id="cervezas">
+        <h1>Cervezas</h1>
+        <div class="product-container">
+            <div class="product">
+                <h2>Modelo Rubia x24</h2>
+                <img src="https://www.dropbox.com/scl/fi/gcwnakjwxa34sv49dfocz/caja_modelo.jpg?rlkey=j0oppk688iicbwjw7obpo0s05&raw=1" alt="Modelo Rubia x24">
+                <p>₡24,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Modelo Rubia x24')">-</button>
+                    <span class="quantity" id="counter-Modelo Rubia x24">0</span>
+                    <button class="plus" onclick="addToCart('Modelo Rubia x24', 24000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Stella x24</h2>
+                <img src="https://www.dropbox.com/scl/fi/14m709fgubu8ozxzzuqb8/stella.jpg?rlkey=ff6qvyo3dxtaf5u8ntdgs3bm5&raw=1" alt="Stella x24">
+                <p>₡22,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Stella x24')">-</button>
+                    <span class="quantity" id="counter-Stella x24">0</span>
+                    <button class="plus" onclick="addToCart('Stella x24', 22000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Corona Caja x24</h2>
+                <img src="https://www.dropbox.com/scl/fi/94dglk1tgp6c6x73iw7qk/corona.jpg?rlkey=y9yzay6fr0v9ptdxexlm6clhz&raw=1" alt="Corona Caja x24">
+                <p>₡20,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Corona Caja x24')">-</button>
+                    <span class="quantity" id="counter-Corona Caja x24">0</span>
+                    <button class="plus" onclick="addToCart('Corona Caja x24', 20000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Cuba Libre x24</h2>
+                <img src="https://www.dropbox.com/scl/fi/7rn91jxc9tnfensaqddz7/cuba_libre.jpg?rlkey=r61wn3la2ezpyg7r2twub2w7y&raw=1" alt="Cuba Libre x24">
+                <p>₡20,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Cuba Libre x24')">-</button>
+                    <span class="quantity" id="counter-Cuba Libre x24">0</span>
+                    <button class="plus" onclick="addToCart('Cuba Libre x24', 20000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Heineken Caja x24</h2>
+                <img src="https://www.dropbox.com/scl/fi/b9dmpca8naunpfp9rc43c/heineken.jpg?rlkey=oza6t1j1b51fr5us40ybbtqu6&raw=1" alt="Heineken Caja x24">
+                <p>₡18,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Heineken Caja x24')">-</button>
+                    <span class="quantity" id="counter-Heineken Caja x24">0</span>
+                    <button class="plus" onclick="addToCart('Heineken Caja x24', 18000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Sol Caja x24</h2>
+                <img src="https://www.dropbox.com/scl/fi/sviac6m62v16987atzobe/sol.jpg?rlkey=3ysf4peda7icnro543hu8mdn2&raw=1" alt="Sol Caja x24">
+                <p>₡18,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Sol Caja x24')">-</button>
+                    <span class="quantity" id="counter-Sol Caja x24">0</span>
+                    <button class="plus" onclick="addToCart('Sol Caja x24', 18000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Shots Bidú x20</h2>
+                <img src="https://www.dropbox.com/scl/fi/x8k3ebm41s14y1qwe15wu/shots-bidu.jpg?rlkey=36c4y9p3an3blr2pyvq3h0yu7&raw=1" alt="Shots Bidú x20">
+                <p>₡9,000</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Shots Bidú x20')">-</button>
+                    <span class="quantity" id="counter-Shots Bidú x20">0</span>
+                    <button class="plus" onclick="addToCart('Shots Bidú x20', 9000)">+</button>
+                </div>
+            </div>
+
+            <div class="product">
+                <h2>Magnum 200ml</h2>
+                <img src="https://www.dropbox.com/scl/fi/xodlk2nnalcylpmpy3l21/magnum.jpg?rlkey=4jl6e5uclt17i17jdxo2etkr9&raw=1" alt="Magnum 200ml">
+                <p>₡2,500</p>
+                <div class="quantity-controls">
+                    <button class="minus" onclick="removeFromCart('Magnum 200ml')">-</button>
+                    <span class="quantity" id="counter-Magnum 200ml">0</span>
+                    <button class="plus" onclick="addToCart('Magnum 200ml', 2500)">+</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="whisky">
+        <h1>Whisky</h1>
+        <div class="product-container">
+            <!-- Productos de Whisky -->
+        </div>
+    </section>
+
+    <section id="vodka">
+        <h1>Vodka</h1>
+        <div class="product-container">
+            <!-- Productos de Vodka -->
+        </div>
+    </section>
+
+    <section id="ron">
+        <h1>Ron</h1>
+        <div class="product-container">
+            <!-- Productos de Ron -->
+        </div>
+    </section>
+
+    <section id="tequila_mezcal">
+        <h1>Tequila y Mezcal</h1>
+        <div class="product-container">
+            <!-- Productos de Tequila y Mezcal -->
+        </div>
+    </section>
+
+    <section id="champagne_espumantes">
+        <h1>Champagne y Espumantes</h1>
+        <div class="product-container">
+            <!-- Productos de Champagne y Espumantes -->
+        </div>
+    </section>
+
+    <div id="cart">
+        <h2>Carrito de Compras</h2>
+        <ul id="cart-items"></ul>
+        <p id="cart-total">Total: ₡0</p>
+        <button id="send-whatsapp-button" onclick="sendToWhatsApp()">Enviar por WhatsApp</button>
+    </div>
+
+    <section id="promociones">
+        <h1>Promociones</h1>
+    </section>
+
+    <section id="contacto">
+        <h1>Contacto</h1>
+    </section>
+</body>
+</html>
